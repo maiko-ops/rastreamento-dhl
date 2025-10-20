@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Rastreamento DHL</title>
+</head>
+<body>
+  <h1>Rastreie sua encomenda DHL</h1>
+  <form id="rastreamento">
+    <input type="text" id="codigo" placeholder="Digite o código de rastreio">
+    <button type="submit">Rastrear</button>
+  </form>
+  <div id="resultado"></div>
+</body>
+</html>

@@ -12,7 +12,7 @@ document.getElementById("rastreamento").addEventListener("submit", function(e) {
   fetch(`https://api-eu.dhl.com/track/shipments?trackingNumber=${codigo}`, {
     method: "GET",
     headers: {
-      "DHL-API-Key": "SUA_API_KEY"
+      "DHL-API-Key": "GAWegOrzyTeGp9mXBygDZ9GCIk7Df7rS"
     }
   })
   .then(res => res.json())

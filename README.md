@@ -9,28 +9,17 @@ document.getElementById("rastreamento").addEventListener("submit", function(e) {
   e.preventDefault();
   const codigo = document.getElementById("codigo").value;
 
-  fetch("https://api.aftership.com/v4/trackings", {
-    method: "POST",
+  fetch(`https://api-eu.dhl.com/track/shipments?trackingNumber=${codigo}`, {
+    method: "GET",
     headers: {
-      "Content-Type": "application/json",
-      "aftership-api-key": "SUA_API_KEY"
-    },
-    body: JSON.stringify({
-      tracking: {
-        tracking_number: codigo,
-        slug: "dhl"
-      }
-    })
+      "DHL-API-Key": "SUA_API_KEY"
+    }
   })
   .then(res => res.json())
   .then(data => {
-    if (data.data) {
-      document.getElementById("resultado").innerText =
-        "Rastreamento iniciado. Você receberá atualizações por e-mail.";
-    } else {
-      document.getElementById("resultado").innerText =
-        "Erro: " + data.meta.message;
-    }
+    const status = data.shipments?.[0]?.status?.status;
+    document.getElementById("resultado").innerText =
+      "Status atual: " + status;
   });
 });
 </script>

@@ -1,0 +1,80 @@
+// =========================================================
+// !!! AVISO: CHAVE DE API EXPOSTA PUBLICAMENTE - RISCO ALTO !!!
+// Use apenas para testes rápidos.
+// =========================================================
+
+// **Substitua este valor pela sua API Key REAL (Show Key no portal)**
+const DHL_API_KEY = "SUA_CHAVE_DE_API_DA_DHL_AQUI"; 
+
+// **Substitua esta URL pelo endpoint de rastreamento REAL da DHL**
+const DHL_TRACKING_URL = "https://api-eu.dhl.com/track/shipments/"; // Exemplo de URL base
+
+async function trackShipment() {
+    const trackingNumber = document.getElementById('dhl-tracking-number').value.trim();
+    const resultsDiv = document.getElementById('tracking-results');
+    
+    if (!trackingNumber) {
+        resultsDiv.innerHTML = '<p style="color: red;">Por favor, insira um número de rastreamento.</p>';
+        return;
+    }
+
+    resultsDiv.innerHTML = '<p>Buscando informações de rastreamento...</p>';
+
+    // Construindo a URL com o número de rastreamento
+    // A DHL também pode exigir parâmetros de consulta (como languageCode) na URL.
+    const apiUrl = `${DHL_TRACKING_URL}${trackingNumber}`; 
+
+    try {
+        const response = await fetch(apiUrl, {
+            method: 'GET',
+            headers: {
+                // A chave da API é enviada no cabeçalho (header)
+                'DHL-API-Key': DHL_API_KEY, 
+                'Accept': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            // Lidar com erros da API, como número inválido
+            resultsDiv.innerHTML = `<p style="color: red;">Erro ${response.status}: Falha ao buscar rastreamento. Mensagem da API: ${data.detail || 'Verifique o número e a API Key.'}</p>`;
+            return;
+        }
+
+        // Chamando a função para exibir os dados
+        displayTrackingInfo(data, resultsDiv); 
+
+    } catch (error) {
+        resultsDiv.innerHTML = `<p style="color: red;">Erro de Conexão: Verifique se o navegador está bloqueando a requisição (CORS).</p>`;
+        console.error('Erro na chamada da API:', error);
+    }
+}
+
+function displayTrackingInfo(data, resultsDiv) {
+    let htmlContent = '<h3>Status Atual: ' + (data.shipments[0].status.status || 'N/A') + '</h3>';
+    
+    const events = data.shipments[0].events || [];
+
+    if (events.length === 0) {
+        htmlContent += '<p>Nenhum histórico de eventos encontrado para este número.</p>';
+        resultsDiv.innerHTML = htmlContent;
+        return;
+    }
+
+    htmlContent += '<h4>Histórico de Locais:</h4>';
+    htmlContent += '<ul>';
+
+    // Os eventos (locais por onde passou) costumam vir em ordem cronológica reversa,
+    // então o loop exibe do mais recente para o mais antigo.
+    events.forEach(event => {
+        const date = new Date(event.timestamp).toLocaleString();
+        const location = event.location.address.addressLocality || 'Local Desconhecido';
+        const description = event.status || 'Sem descrição';
+
+        htmlContent += `<li><strong>${date}</strong> - ${description} em ${location}</li>`;
+    });
+
+    htmlContent += '</ul>';
+    resultsDiv.innerHTML = htmlContent;
+}
